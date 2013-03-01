@@ -49,6 +49,7 @@ sourcedir="" # directory where repos will be cloned
 builddir="" # directory for builds
 confdir="" # directory for build configuration files
 dldir="" # setting for DL_DIR if -d option is used
+leavegitalone="" # variable to instruct checkout of branch/commit
 
 
 #####################
@@ -68,7 +69,7 @@ cat <<EOM
 
 
 Usage:
-    $0 [-i] [-f inputfile] [-o outputfile] [-d dldir] [-b basedir] [-h]
+    $0 [-i] [-f inputfile] [-o outputfile] [-d dldir] [-b basedir] [-g option] [-h]
 
 Parameters:
     -i: Interactive mode.  This mode will query the user to input information
@@ -85,6 +86,7 @@ Parameters:
     -b: This optional directory will be the location of the base directory
         where the build will be configured.  The default is the current
         directory.
+    -g: Whether to skip the git-checkout of branch/commit.  Default is no.
     -h: This message
 
 Input Files:
@@ -299,14 +301,17 @@ configure_repo() {
         get_repo_branch
     fi
 
-    checkout_branch
+    if [ "x$leavegitalone" = "x" -o "x$leavegitalone" = "xy" -o "x$leavegitalone" = "xY" ]; then
 
-    if [ "x$commit" = "x" ]
-    then
-        get_repo_commit
+        checkout_branch
+
+        if [ "x$commit" = "x" ]
+        then
+            get_repo_commit
+        fi
+
+        checkout_commit
     fi
-
-    checkout_commit
 
     if [ "x$repo_layers" = "xall" ]
     then
@@ -814,6 +819,7 @@ do
         o ) outputfile="$OPTARG";;
         d ) dldir="$OPTARG";;
         b ) oebase="$OPTARG";;
+        g ) leavegitalone="$OPTARG";;
         h ) usage;;
     esac
 done
